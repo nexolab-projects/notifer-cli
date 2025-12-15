@@ -11,8 +11,8 @@ pip install notifer-cli
 Or install from source:
 
 ```bash
-git clone https://github.com/notifer/notifer.git
-cd notifer/cli
+git clone https://github.com/nexolab-projects/notifer-cli.git
+cd notifer-cli
 pip install -e .
 ```
 
@@ -25,13 +25,21 @@ pip install -e .
 notifer config init
 
 # For production (Notifer cloud)
-notifer config set server https://api.notifer.io
+notifer config set server https://app.notifer.io
 
 # For local development
 notifer config set server http://localhost:8080
 ```
 
-### 2. Publish a message
+### 2. Create a topic (required before publishing)
+
+Topics must exist before publishing. Create one first:
+
+```bash
+notifer topics create my-topic --description "My first topic"
+```
+
+### 3. Publish a message
 
 ```bash
 # Simple message
@@ -48,7 +56,7 @@ notifer publish deployments "# Deploy Success\n\n**Status**: ✅" \
   --priority 4
 ```
 
-### 3. Subscribe to messages
+### 4. Subscribe to messages
 
 ```bash
 # Subscribe and print to console
@@ -174,7 +182,7 @@ notifer config show
 notifer config set <key> <value>
 
 # Examples:
-notifer config set server https://api.notifer.io  # Production
+notifer config set server https://app.notifer.io  # Production
 notifer config set server http://localhost:8080    # Local dev
 notifer config set api-key noti_abc123...
 ```
@@ -185,7 +193,7 @@ The CLI uses `~/.notifer.yaml` for configuration:
 
 ```yaml
 # Server settings
-server: https://api.notifer.io  # Production (or http://localhost:8080 for local dev)
+server: https://app.notifer.io  # Production (or http://localhost:8080 for local dev)
 
 # Authentication (choose one)
 api_key: noti_abc123...
