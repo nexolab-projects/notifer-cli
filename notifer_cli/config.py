@@ -8,9 +8,12 @@ import yaml
 class Config:
     """Configuration for Notifer CLI."""
 
+    # Default production server - hardcoded, no configuration needed
+    DEFAULT_SERVER = "https://app.notifer.io"
+
     def __init__(self):
         """Initialize config with defaults."""
-        self.server: str = "https://api.notifer.io"
+        self.server: str = self.DEFAULT_SERVER
         self.api_key: Optional[str] = None
         self.email: Optional[str] = None
         self.access_token: Optional[str] = None
@@ -47,9 +50,11 @@ class Config:
     def save(self):
         """Save config to file."""
         config_file = self.config_path()
-        data = {
-            "server": self.server,
-        }
+        data = {}
+
+        # Only save server if it differs from default
+        if self.server != self.DEFAULT_SERVER:
+            data["server"] = self.server
 
         if self.api_key:
             data["api_key"] = self.api_key

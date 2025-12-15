@@ -18,17 +18,14 @@ pip install -e .
 
 ## Quick Start
 
-### 1. Configure API endpoint
+### 1. Authenticate
 
 ```bash
-# Create config file
-notifer config init
+# Option 1: Login with email/password
+notifer login user@example.com
 
-# For production (Notifer cloud)
-notifer config set server https://app.notifer.io
-
-# For local development
-notifer config set server http://localhost:8080
+# Option 2: Use API key
+notifer config set api-key noti_your_key_here
 ```
 
 ### 2. Create a topic (required before publishing)
@@ -109,7 +106,6 @@ Options:
   --priority INTEGER    Priority (1-5, default: 3)
   --tags TEXT           Comma-separated tags
   --api-key TEXT        API key for authentication
-  --server TEXT         Override server URL
 ```
 
 ### Subscribing
@@ -172,7 +168,7 @@ notifer topics delete <name>
 ### Configuration
 
 ```bash
-# Initialize config file
+# Initialize config file (optional)
 notifer config init
 
 # Show current config
@@ -182,9 +178,8 @@ notifer config show
 notifer config set <key> <value>
 
 # Examples:
-notifer config set server https://app.notifer.io  # Production
-notifer config set server http://localhost:8080    # Local dev
 notifer config set api-key noti_abc123...
+notifer config set email user@example.com
 ```
 
 ## Configuration File
@@ -192,9 +187,6 @@ notifer config set api-key noti_abc123...
 The CLI uses `~/.notifer.yaml` for configuration:
 
 ```yaml
-# Server settings
-server: https://app.notifer.io  # Production (or http://localhost:8080 for local dev)
-
 # Authentication (choose one)
 api_key: noti_abc123...
 

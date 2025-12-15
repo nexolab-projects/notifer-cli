@@ -34,7 +34,8 @@ def init_config():
         Panel(
             f"[green]✓[/green] Configuration file created\n\n"
             f"Location: {config_file}\n\n"
-            f"Edit this file to set your default server and credentials.",
+            f"Next: Run [cyan]notifer login[/cyan] or set your API key with:\n"
+            f"[cyan]notifer config set api-key YOUR_KEY[/cyan]",
             title="Config Initialized",
             border_style="green",
         )
@@ -79,15 +80,14 @@ def set_config(key, value):
 
     \b
     Examples:
-      notifer config set server http://localhost:8080
       notifer config set api-key noti_abc123...
+      notifer config set email user@example.com
     """
     try:
         cfg = Config.load()
 
         # Map CLI keys to config attributes
         key_mapping = {
-            "server": "server",
             "api-key": "api_key",
             "api_key": "api_key",
             "email": "email",
@@ -97,7 +97,7 @@ def set_config(key, value):
         if not config_key:
             console.print(
                 f"[red]✗ Unknown config key:[/red] {key}\n"
-                f"Valid keys: {', '.join(key_mapping.keys())}"
+                f"Valid keys: {', '.join(set(key_mapping.keys()))}"
             )
             raise click.Abort()
 
@@ -120,7 +120,6 @@ def get_config(key):
         cfg = Config.load()
 
         key_mapping = {
-            "server": "server",
             "api-key": "api_key",
             "api_key": "api_key",
             "email": "email",
