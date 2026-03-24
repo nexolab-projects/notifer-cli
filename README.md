@@ -18,13 +18,11 @@ pip install -e .
 
 ## Quick Start
 
-### 1. Authenticate
+### 1. Set your API key
+
+Get your API key at [app.notifer.io](https://app.notifer.io) and configure the CLI:
 
 ```bash
-# Option 1: Login with email/password
-notifer login user@example.com
-
-# Option 2: Use API key
 notifer config set api-key noti_your_key_here
 ```
 
@@ -68,31 +66,31 @@ notifer subscribe my-topic --output messages.jsonl
 
 ## Authentication
 
-### Using API Keys (Recommended)
+### API Key (required)
+
+All write operations require an API key. Get one at [app.notifer.io](https://app.notifer.io).
 
 ```bash
-# Create API key via web UI or:
-notifer keys create "CI/CD Pipeline" \
-  --scopes publish,topics:read \
-  --email user@example.com \
-  --password yourpassword
-
-# Use API key for publishing
-notifer publish my-topic "Message" --api-key noti_abc123...
-
-# Or save in config
+# Save in config (recommended)
 notifer config set api-key noti_abc123...
+
+# Or pass directly per command
+notifer publish my-topic "Message" --api-key noti_abc123...
 ```
 
-### Using Email/Password
+### Topic Access Token (for private topics)
+
+Private topics require a topic access token (`tk_...`) for read/write access:
 
 ```bash
-# Login (stores token in ~/.notifer.yaml)
-notifer login user@example.com
+# Publish to a private topic
+notifer publish private-topic "Secret message" --topic-token tk_abc123...
 
-# Publish with stored credentials
-notifer publish my-topic "Message"
+# Subscribe to a private topic
+notifer subscribe private-topic --topic-token tk_abc123...
 ```
+
+Topic access tokens are created by the topic owner via the web app or API.
 
 ## Commands
 
@@ -102,10 +100,12 @@ notifer publish my-topic "Message"
 notifer publish <topic> <message> [OPTIONS]
 
 Options:
-  --title TEXT          Message title
-  --priority INTEGER    Priority (1-5, default: 3)
-  --tags TEXT           Comma-separated tags
-  --api-key TEXT        API key for authentication
+  -t, --title TEXT        Message title
+  -p, --priority INTEGER  Priority (1-5, default: 3)
+  --tags TEXT             Comma-separated tags
+  --api-key TEXT          API key for authentication
+  --topic-token TEXT      Topic access token for private topics
+  --server TEXT           Override server URL
 ```
 
 ### Subscribing
@@ -114,10 +114,12 @@ Options:
 notifer subscribe <topics> [OPTIONS]
 
 Options:
-  --output PATH         Save messages to file (JSONL format)
-  --since TEXT          Only show messages since timestamp
-  --api-key TEXT        API key for authentication
-  --json                Output raw JSON (no formatting)
+  -o, --output PATH      Save messages to file (JSONL format)
+  --since TEXT            Only show messages since timestamp
+  --api-key TEXT          API key for authentication
+  --topic-token TEXT      Topic access token for private topics
+  --server TEXT           Override server URL
+  --json                 Output raw JSON (no formatting)
 ```
 
 ### API Keys Management
@@ -130,9 +132,9 @@ notifer keys list
 notifer keys create <name> [OPTIONS]
 
 Options:
-  --scopes TEXT         Comma-separated scopes (default: *)
-  --description TEXT    Key description
-  --expires TEXT        Expiration date (ISO format)
+  -s, --scopes TEXT       Comma-separated scopes (default: *)
+  -d, --description TEXT  Key description
+  --expires TEXT          Expiration date (ISO format)
 
 # Revoke key
 notifer keys revoke <key-id>
@@ -154,15 +156,15 @@ notifer topics list --mine
 notifer topics create <name> [OPTIONS]
 
 Options:
-  --description TEXT    Topic description
-  --private            Make topic private
-  --discoverable       Make discoverable in browse
+  -d, --description TEXT  Topic description
+  --private               Make topic private
+  --no-discover           Hide from discovery
 
 # Get topic info
 notifer topics get <name>
 
 # Delete topic
-notifer topics delete <name>
+notifer topics delete <topic-id>
 ```
 
 ### Configuration
@@ -174,12 +176,11 @@ notifer config init
 # Show current config
 notifer config show
 
-# Set config value
-notifer config set <key> <value>
-
-# Examples:
+# Set API key
 notifer config set api-key noti_abc123...
-notifer config set email user@example.com
+
+# Get config value
+notifer config get api-key
 ```
 
 ## Configuration File
@@ -187,15 +188,19 @@ notifer config set email user@example.com
 The CLI uses `~/.notifer.yaml` for configuration:
 
 ```yaml
-# Authentication (choose one)
 api_key: noti_abc123...
 
-# OR email/password (stores JWT token)
-email: user@example.com
-access_token: eyJhbG...
-refresh_token: eyJhbG...
+defaults:
+  priority: 3
+  tags: []
+```
 
-# Default options
+The default server is `https://app.notifer.io`. Override it only if needed:
+
+```yaml
+server: https://custom-server.example.com
+api_key: noti_abc123...
+
 defaults:
   priority: 3
   tags: []
@@ -209,7 +214,6 @@ defaults:
 #!/bin/bash
 # deploy.sh
 
-# Create API key with publish scope
 API_KEY="noti_abc123..."
 
 # Notify on deploy start
@@ -260,7 +264,7 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Install Notifer CLI
         run: pip install notifer-cli

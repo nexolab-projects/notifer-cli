@@ -2,13 +2,13 @@
 import click
 from rich.console import Console
 
-from .commands import publish, subscribe, keys, topics, config, auth
+from .commands import publish, subscribe, keys, topics, config
 
 console = Console()
 
 
 @click.group()
-@click.version_option(version="1.0.0", prog_name="notifer")
+@click.version_option(version="1.1.0", prog_name="notifer")
 @click.pass_context
 def cli(ctx):
     """
@@ -39,8 +39,6 @@ cli.add_command(subscribe.subscribe)
 cli.add_command(keys.keys)
 cli.add_command(topics.topics)
 cli.add_command(config.config)
-cli.add_command(auth.login)
-cli.add_command(auth.logout)
 
 
 if __name__ == "__main__":

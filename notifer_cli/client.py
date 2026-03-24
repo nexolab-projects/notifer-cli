@@ -17,8 +17,6 @@ class NotiferClient:
         """Setup authentication headers."""
         if self.config.api_key:
             self.session.headers["X-API-Key"] = self.config.api_key
-        elif self.config.access_token:
-            self.session.headers["Authorization"] = f"Bearer {self.config.access_token}"
 
     def publish(
         self,
@@ -27,6 +25,7 @@ class NotiferClient:
         title: Optional[str] = None,
         priority: int = 3,
         tags: Optional[list[str]] = None,
+        topic_token: Optional[str] = None,
     ) -> dict[str, Any]:
         """
         Publish a message to a topic.
@@ -37,6 +36,7 @@ class NotiferClient:
             title: Optional message title
             priority: Priority (1-5, default: 3)
             tags: Optional list of tags
+            topic_token: Optional topic access token for private topics
 
         Returns:
             Published message data
@@ -54,17 +54,22 @@ class NotiferClient:
         if tags:
             payload["tags"] = tags
 
-        response = self.session.post(url, json=payload)
+        headers = {}
+        if topic_token:
+            headers["X-Topic-Token"] = topic_token
+
+        response = self.session.post(url, json=payload, headers=headers)
         response.raise_for_status()
         return response.json()
 
-    def subscribe(self, topic: str, since: Optional[str] = None):
+    def subscribe(self, topic: str, since: Optional[str] = None, topic_token: Optional[str] = None):
         """
         Subscribe to a topic via SSE.
 
         Args:
             topic: Topic name
             since: Optional timestamp to get messages since
+            topic_token: Optional topic access token for private topics
 
         Yields:
             Message events as they arrive
@@ -73,6 +78,8 @@ class NotiferClient:
         params = {}
         if since:
             params["since"] = since
+        if topic_token:
+            params["token"] = topic_token
 
         response = self.session.get(url, params=params, stream=True)
         response.raise_for_status()
@@ -179,20 +186,3 @@ class NotiferClient:
         url = f"{self.config.server}/api/topics/{topic_id}"
         response = self.session.delete(url)
         response.raise_for_status()
-
-    # Auth
-    def login(self, email: str, password: str) -> dict[str, Any]:
-        """Login with email/password."""
-        url = f"{self.config.server}/auth/login"
-        payload = {"email": email, "password": password}
-        response = self.session.post(url, json=payload)
-        response.raise_for_status()
-        data = response.json()
-
-        # Update config with tokens
-        self.config.access_token = data["access_token"]
-        self.config.refresh_token = data["refresh_token"]
-        self.config.email = email
-        self._setup_auth()
-
-        return data

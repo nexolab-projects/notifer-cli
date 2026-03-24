@@ -18,13 +18,15 @@ console = Console()
 @click.option("--output", "-o", type=click.Path(), help="Save messages to file (JSONL format)")
 @click.option("--since", help="Only show messages since timestamp (ISO format)")
 @click.option("--api-key", help="API key for authentication")
+@click.option("--topic-token", help="Topic access token for private topics")
 @click.option("--server", help="Override server URL")
 @click.option("--json", "json_output", is_flag=True, help="Output raw JSON (no formatting)")
-def subscribe(topics, output, since, api_key, server, json_output):
+def subscribe(topics, output, since, api_key, topic_token, server, json_output):
     """
     Subscribe to topics and receive messages in real-time.
 
     TOPICS can be a single topic or comma-separated list.
+    For private topics, use --topic-token with a topic access token.
 
     \b
     Examples:
@@ -32,6 +34,7 @@ def subscribe(topics, output, since, api_key, server, json_output):
       notifer subscribe alerts,deployments
       notifer subscribe my-topic --output messages.jsonl
       notifer subscribe my-topic --since 2025-01-01T00:00:00Z
+      notifer subscribe private-topic --topic-token tk_abc123
     """
     try:
         # Load config
@@ -73,7 +76,7 @@ def subscribe(topics, output, since, api_key, server, json_output):
 
         # Subscribe and process messages
         message_count = 0
-        for message in client.subscribe(topic, since=since):
+        for message in client.subscribe(topic, since=since, topic_token=topic_token):
             message_count += 1
 
             # Save to file if specified

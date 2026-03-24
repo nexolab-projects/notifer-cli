@@ -34,7 +34,7 @@ def init_config():
         Panel(
             f"[green]✓[/green] Configuration file created\n\n"
             f"Location: {config_file}\n\n"
-            f"Next: Run [cyan]notifer login[/cyan] or set your API key with:\n"
+            f"Next: Set your API key with:\n"
             f"[cyan]notifer config set api-key YOUR_KEY[/cyan]",
             title="Config Initialized",
             border_style="green",
@@ -81,7 +81,6 @@ def set_config(key, value):
     \b
     Examples:
       notifer config set api-key noti_abc123...
-      notifer config set email user@example.com
     """
     try:
         cfg = Config.load()
@@ -90,7 +89,6 @@ def set_config(key, value):
         key_mapping = {
             "api-key": "api_key",
             "api_key": "api_key",
-            "email": "email",
         }
 
         config_key = key_mapping.get(key)
@@ -122,7 +120,6 @@ def get_config(key):
         key_mapping = {
             "api-key": "api_key",
             "api_key": "api_key",
-            "email": "email",
         }
 
         config_key = key_mapping.get(key)
